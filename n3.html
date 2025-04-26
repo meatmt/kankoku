@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢字テスト</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            font-size: 2.5rem;
+        }
+        .kanji-container {
+            font-size: 8rem;
+            margin-bottom: 30px;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            margin: 15px;
+            padding: 15px 30px;
+            font-size: 2rem;
+        }
+
+        /* スマホサイズの画面用 */
+        @media screen and (max-width: 600px) {
+            body {
+                font-size: 1.5rem;  /* スマホ用の小さい文字サイズ */
+            }
+            .kanji-container {
+                font-size: 5rem;  /* スマホ用の小さい漢字サイズ */
+            }
+            button {
+                font-size: 1.5rem;  /* スマホ用の小さいボタンサイズ */
+            }
+        }
+
+        /* タブレットや小さめのPC画面用 */
+        @media screen and (min-width: 601px) and (max-width: 1024px) {
+            body {
+                font-size: 2rem;  /* タブレットや小さめのPC画面用の文字サイズ */
+            }
+            .kanji-container {
+                font-size: 6rem;  /* タブレットや小さめのPC画面用の漢字サイズ */
+            }
+            button {
+                font-size: 1.8rem;  /* タブレットや小さめのPC画面用のボタンサイズ */
+            }
+        }
+
+        /* 大きなPC画面用 */
+        @media screen and (min-width: 1025px) {
+            body {
+                font-size: 2.5rem;  /* 大きなPC画面用の文字サイズ */
+            }
+            .kanji-container {
+                font-size: 8rem;  /* 大きなPC画面用の漢字サイズ */
+            }
+            button {
+                font-size: 2rem;  /* 大きなPC画面用のボタンサイズ */
+            }
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="searchInput" placeholder="検索..." oninput="searchKanji()" style="font-size: 2rem; padding: 10px; width: 80%;">
+<div id="searchResults"></div>
+    <div class="kanji-container" id="kanji">N3</div>
+    <div id="reading" style="display: none; font-size: 1.5rem;"></div>
+    <div class="buttons">
+        <button onclick="showReading()">뜻과 읽기</button>
+        <button onclick="nextKanji()">다음</button>
+    </div>
+    
+    <script>
+        let kanjiList = [
+            { kanji: "愛", reading: "あい", meaning: "사랑,애정" },
+            { kanji: "合図", reading: "あいず", meaning: "신호" },
+            { kanji: "相手", reading: "あいて", meaning: "상대,상대방" },
+            { kanji: "愛用者", reading: "あいようしゃ", meaning: "애용자" },
+            { kanji: "赤ん坊", reading: "あかんぼう", meaning: "갓난아기,아기" },
+            { kanji: "空き地", reading: "あきち", meaning: "공터" },
+            { kanji: "握手", reading: "あくしゅ", meaning: "악수" },
+            { kanji: "あくび", reading: "あくび", meaning: "하품" },
+            { kanji: "朝日", reading: "あさひ", meaning: "아침 해" },
+            { kanji: "足跡", reading: "あしあと", meaning: "발자국" },
+            { kanji: "味見", reading: "あじみ", meaning: "맛봄,간 보기" },
+            { kanji: "足元", reading: "あしもと", meaning: "발밑" },
+            
+            { kanji: "汗", reading: "あせ", meaning: "땀" },
+            { kanji: "当たり前", reading: "あたりまえ", meaning: "당연" },
+            { kanji: "悪化", reading: "あっか", meaning: "악화" },
+            { kanji: "集まり", reading: "あつまり", meaning: "모임" },
+            { kanji: "あて先", reading: "あてさき", meaning: "수신자,수신인,수신처" },
+            { kanji: "穴", reading: "あな", meaning: "구멍" },
+            { kanji: "油", reading: "あぶら", meaning: "기름" },
+            { kanji: "雨戸", reading: "あまど", meaning: "덧문" },
+            { kanji: "網戸", reading: "あみど", meaning: "방충망" },
+            { kanji: "あれこれ", reading: "あれこれ", meaning: "이것저것,여러 가지" },
+            { kanji: "泡", reading: "あわ", meaning: "거품" },
+            { kanji: "案", reading: "あん", meaning: "안" },
+            { kanji: "暗記", reading: "あんき", meaning: "암기" },
+            
+            { kanji: "胃", reading: "い", meaning: "위,위장" },
+            { kanji: "怒り", reading: "いかり", meaning: "분노" },
+            { kanji: "息", reading: "いき", meaning: "숨,호흡" },
+            { kanji: "意義", reading: "いぎ", meaning: "의의" },
+            { kanji: "勢い", reading: "いきおい", meaning: "기세" },
+            { kanji: "息抜き", reading: "いきぬき", meaning: "휴식,잠시 숨을 돌림" },
+            { kanji: "生き物", reading: "いきもの", meaning: "생물" },
+            { kanji: "育児", reading: "いくじ", meaning: "육아" },
+            { kanji: "以後", reading: "いご", meaning: "이후" },
+            { kanji: "以降", reading: "いこう", meaning: "이후" },
+            { kanji: "意思", reading: "いし", meaning: "의사,생각,의견" },
+            { kanji: "医師", reading: "いし", meaning: "의사" },
+            { kanji: "意志", reading: "いし", meaning: "의지,의향" },
+            
+            { kanji: "異常", reading: "いじょう", meaning: "이상" },
+            { kanji: "以前", reading: "いぜん", meaning: "이전" },
+            { kanji: "板", reading: "いた", meaning: "판자,널빤지" },
+            { kanji: "痛み", reading: "いたみ", meaning: "아픔,고통" },
+            { kanji: "位置", reading: "いち", meaning: "위치" },
+            { kanji: "市場", reading: "いちば", meaning: "시장(주로 재래시장을 말함)" },
+            { kanji: "一部", reading: "いちぶ", meaning: "일부" },
+            { kanji: "一流", reading: "いちりゅう", meaning: "일류" },
+            { kanji: "一生", reading: "いっしょう", meaning: "일생,평생" },
+            { kanji: "一方通行", reading: "いっぽうつうこう", meaning: "일방통행" },
+            { kanji: "移動", reading: "いどう", meaning: "이동" },
+            { kanji: "いとこ", reading: "いとこ", meaning: "사촌" },
+            { kanji: "居眠り", reading: "いねむり", meaning: "앉아서 조는 것" },
+            
+            { kanji: "違反", reading: "いはん", meaning: "위반" },
+            { kanji: "居間", reading: "いま", meaning: "거실" },
+            { kanji: "医療", reading: "いりょう", meaning: "의료" },
+            { kanji: "岩", reading: "いわ", meaning: "바위" },
+            { kanji: "印象", reading: "いんしょう", meaning: "인상" },
+            { kanji: "うがい", reading: "うがい", meaning: "입가심,입안을 헹굼" },
+            { kanji: "受取人", reading: "うけとりにん", meaning: "수취인" },
+            { kanji: "うさぎ", reading: "うさぎ", meaning: "토끼" },
+            { kanji: "牛", reading: "うし", meaning: "소" },
+            { kanji: "右折", reading: "うせつ", meaning: "우회전" },
+            { kanji: "うそつき", reading: "うそつき", meaning: "거짓말쟁이" },
+            { kanji: "内側", reading: "うちがわ", meaning: "안쪽" },
+            { kanji: "腕", reading: "うで", meaning: "팔" },
+
+            { kanji: "馬", reading: "うま", meaning: "말" },
+            { kanji: "生まれ", reading: "うまれ", meaning: "탄생,출생,태생" },
+            { kanji: "梅", reading: "うめ", meaning: "매화" },
+            { kanji: "裏", reading: "うら", meaning: "뒤쪽,반대쪽" },
+            { kanji: "売り上げ", reading: "うりあげ", meaning: "매상,매출" },
+            { kanji: "売り切れ", reading: "うりきれ", meaning: "매진" },
+            { kanji: "うわさ", reading: "うわさ", meaning: "소문" },
+            { kanji: "運河", reading: "うんが", meaning: "운하" },
+            { kanji: "運休", reading: "うんきゅう", meaning: "운휴,운전이나 운항을 중지함" },
+            { kanji: "運賃", reading: "うんちん", meaning: "운임" },
+            { kanji: "運転席", reading: "うんてんせき", meaning: "운전석" },
+            { kanji: "運転免許", reading: "うんてんめんきょ", meaning: "운전면허" },
+            { kanji: "永遠", reading: "えいえん", meaning: "영원" },
+
+            { kanji: "影響", reading: "えいきょう", meaning: "영향" },
+            { kanji: "営業", reading: "えいぎょう", meaning: "영업" },
+            { kanji: "英国", reading: "えいこく", meaning: "영국" },
+            { kanji: "英文", reading: "えいぶん", meaning: "영문" },
+            { kanji: "栄養", reading: "えいよう", meaning: "영양" },
+            { kanji: "笑顔", reading: "えがお", meaning: "웃는 얼굴" },
+            { kanji: "宴会", reading: "えんかい", meaning: "연회" },
+            { kanji: "延期", reading: "えんき", meaning: "연기,뒤로 미룸" },
+            { kanji: "演劇", reading: "えんげき", meaning: "연극" },
+            { kanji: "演奏", reading: "えんそう", meaning: "연주" },
+            { kanji: "遠足", reading: "えんそく", meaning: "소풍" },
+            { kanji: "遠慮", reading: "えんりょ", meaning: "사양,삼감" },
+            { kanji: "おい", reading: "おい", meaning: "남자 조카" },
+
+            { kanji: "お祝い", reading: "おいわい", meaning: "축하,축하 선물" },
+            { kanji: "応援", reading: "おうえん", meaning: "응원" },
+            { kanji: "王様", reading: "おうさま", meaning: "임금님,왕" },
+            { kanji: "王子", reading: "おうじ", meaning: "왕자" },
+            { kanji: "横断", reading: "おうだん", meaning: "횡단" },
+            { kanji: "往復", reading: "おうふく", meaning: "왕복" },
+            { kanji: "応募", reading: "おうぼ", meaning: "응모" },
+            { kanji: "応用", reading: "おうよう", meaning: "응용" },
+            { kanji: "大型", reading: "おおがた", meaning: "대형" },
+            { kanji: "大通り", reading: "おおどおり", meaning: "큰길,대로" },
+            { kanji: "大家", reading: "おおや", meaning: "집주인" },
+            { kanji: "奥", reading: "おく", meaning: "안쪽,속" },
+
+            { kanji: "屋外", reading: "おくがい", meaning: "옥외,야외" },
+            { kanji: "屋内", reading: "おくない", meaning: "옥내,실내" },
+            { kanji: "お小遣い", reading: "おこづかい", meaning: "용돈" },
+            { kanji: "押入れ", reading: "おしいれ", meaning: "벽장" },
+            { kanji: "おしまい", reading: "おしまい", meaning: "끝" },
+            { kanji: "おしゃれ", reading: "おしゃれ", meaning: "멋을 부림,멋쟁이" },
+            { kanji: "お嬢さん", reading: "おじょうさん", meaning: "아가씨,따님" },
+            { kanji: "お尻", reading: "おしり", meaning: "엉덩이" },
+            { kanji: "お勧め", reading: "おすすめ", meaning: "추천" },
+            { kanji: "お疲れ様", reading: "おつかれさま", meaning: "수고했어,수고하셨어요" },
+            { kanji: "お手伝いさん", reading: "おてつだいさん", meaning: "가사 도우미" },
+            { kanji: "お見合い", reading: "おみあい", meaning: "맞선" },
+
+            { kanji: "思い出", reading: "おもいで", meaning: "추억" },
+            { kanji: "親指", reading: "おやゆび", meaning: "엄지손가락" },
+            { kanji: "お礼", reading: "おれい", meaning: "사례,감사의 말" },
+            { kanji: "音楽家", reading: "おんがくか", meaning: "음악가" },
+            { kanji: "温室", reading: "おんしつ", meaning: "온실" },
+            { kanji: "温泉", reading: "おんせん", meaning: "온천" },
+            { kanji: "温度", reading: "おんど", meaning: "온도" },
+            { kanji: "おんぶ", reading: "おんぶ", meaning: "등에 업음,어부바" },
+            { kanji: "会員", reading: "かいいん", meaning: "회원" },
+            { kanji: "絵画", reading: "かいが", meaning: "회회,그림" },
+            { kanji: "海外", reading: "かいがい", meaning: "해외" },
+            { kanji: "会館", reading: "かいかん", meaning: "회관" },
+            { kanji: "解決", reading: "かいけつ", meaning: "해결" },
+
+            { kanji: "会合", reading: "かいごう", meaning: "회합" },
+            { kanji: "改札", reading: "かいさつ", meaning: "개찰,개찰구" },
+            { kanji: "改札口", reading: "かいさつぐち", meaning: "개찰구" },
+            { kanji: "回収", reading: "かいしゅう", meaning: "회수" },
+            { kanji: "外出", reading: "がいしゅつ", meaning: "외출" },
+            { kanji: "外食", reading: "がいしょく", meaning: "외식" },
+            { kanji: "海水浴", reading: "かいすいよく", meaning: "해수욕" },
+            { kanji: "回数", reading: "かいすう", meaning: "횟수" },
+            { kanji: "回数券", reading: "かいすうけん", meaning: "횟수권" },
+            { kanji: "快晴", reading: "かいせい", meaning: "쾌청" },
+            { kanji: "解説", reading: "かいせつ", meaning: "해설" },
+            { kanji: "会費", reading: "かいひ", meaning: "회비" },
+            { kanji: "香り", reading: "かおり", meaning: "향기" },
+
+            { kanji: "画家", reading: "がか", meaning: "화가" },
+            { kanji: "価格", reading: "かかく", meaning: "가격" },
+            { kanji: "化学", reading: "かがく", meaning: "화학" },
+            { kanji: "係り", reading: "かかり", meaning: "담당,담당자" },
+            { kanji: "書留", reading: "かきとめ", meaning: "등기 우편" },
+            { kanji: "書き取り", reading: "かきとり", meaning: "받아쓰기" },
+            { kanji: "家具", reading: "かぐ", meaning: "가구" },
+            { kanji: "各駅停車", reading: "かくえきていしゃ", meaning: "각역 정차,완행열차,일반 열차" },
+            { kanji: "覚悟", reading: "かくご", meaning: "각오" },
+            { kanji: "各自", reading: "かくじ", meaning: "각자" },
+            { kanji: "学者", reading: "がくしゃ", meaning: "학자" },
+            { kanji: "学習", reading: "がくしゅう", meaning: "학습" },
+            { kanji: "拡大", reading: "かくだい", meaning: "확대" },
+
+            { kanji: "各地", reading: "かくち", meaning: "각지" },
+            { kanji: "確認", reading: "かくにん", meaning: "확인" },
+            { kanji: "学費", reading: "がくひ", meaning: "학비" },
+            { kanji: "学部", reading: "がくぶ", meaning: "학부" },
+            { kanji: "学問", reading: "がくもん", meaning: "학문" },
+            { kanji: "格安", reading: "かくやす", meaning: "값이 쌈,보통보다 특별히 저렴함" },
+            { kanji: "学力", reading: "がくりょく", meaning: "학력" },
+            { kanji: "かけ算", reading: "かけざん", meaning: "곱셈" },
+            { kanji: "過去", reading: "かこ", meaning: "과거" },
+            { kanji: "火災", reading: "かさい", meaning: "화재" },
+            { kanji: "貸し出し", reading: "かしだし", meaning: "대출" },
+            { kanji: "下線", reading: "かせん", meaning: "밑줄" },
+            { kanji: "河川", reading: "かせん", meaning: "하천" },
+
+            { kanji: "肩", reading: "かた", meaning: "어깨" },
+            { kanji: "課題", reading: "かだい", meaning: "과제" },
+            { kanji: "方々", reading: "かたがた", meaning: "여러분,분들(존경의 복수형)" },
+            { kanji: "片方", reading: "かたほう", meaning: "다른 한쪽" },
+            { kanji: "片道", reading: "かたみち", meaning: "편도" },
+            { kanji: "価値", reading: "かち", meaning: "가치" },
+            { kanji: "勝ち", reading: "かち", meaning: "승리" },
+            { kanji: "活気", reading: "かっき", meaning: "활기" },
+            { kanji: "楽器", reading: "がっき", meaning: "악기" },
+            { kanji: "格好", reading: "かっこう", meaning: "모양,겉모습" },
+            { kanji: "活動", reading: "かつどう", meaning: "활동" },
+            { kanji: "仮定", reading: "かてい", meaning: "가정,전제,가설" },
+            { kanji: "家電製品", reading: "かでんせいひん", meaning: "가전제품" },
+            /*{ kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },
+            { kanji: "", reading: "", meaning: "" },*/
+            
+        ];
+        let currentIndex;
+        
+        function showReading() {
+            document.getElementById("reading").style.display = "block";
+            document.getElementById("reading").innerText = kanjiList[currentIndex].reading + " (" + kanjiList[currentIndex].meaning + ")";
+        }
+        
+        function nextKanji() {
+            // ランダムなインデックスを生成
+            currentIndex = Math.floor(Math.random() * kanjiList.length);
+            document.getElementById("kanji").innerText = kanjiList[currentIndex].kanji;
+            document.getElementById("reading").style.display = "none";
+        }
+    </script>
+    <script>
+        function searchKanji() {
+    let query = document.getElementById("searchInput").value.trim();
+    let resultsDiv = document.getElementById("searchResults");
+    resultsDiv.innerHTML = ""; // 検索結果をクリア
+
+    if (query === "") return; // 空白なら検索しない
+
+    let results = kanjiList.filter(item =>
+        item.kanji.includes(query) ||
+        item.reading.includes(query) ||
+        item.meaning.includes(query)
+    );
+
+    if (results.length === 0) {
+        resultsDiv.innerHTML = "<p>該当なし</p>";
+    } else {
+        results.forEach(item => {
+            let resultItem = document.createElement("div");
+            resultItem.innerHTML = `<strong>${item.kanji}</strong> (${item.reading}): ${item.meaning}`;
+            resultItem.style.cursor = "pointer";
+            resultItem.onclick = () => showKanji(item);
+            resultsDiv.appendChild(resultItem);
+        });
+    }
+}
+
+function showKanji(item) {
+    document.getElementById("kanji").textContent = item.kanji;
+    document.getElementById("reading").textContent = `${item.reading} - ${item.meaning}`;
+    document.getElementById("reading").style.display = "block";
+}
+
+    </script>
+</body>
+</html>
